@@ -56,7 +56,7 @@ target_include_directories(g3dlite
 target_link_libraries(g3dlite
   PUBLIC
     ZLIB::ZLIB
-    threads
+    Threads::Threads
 )
 
 install(
