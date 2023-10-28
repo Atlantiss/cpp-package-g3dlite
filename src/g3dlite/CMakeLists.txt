@@ -43,15 +43,18 @@ set(SOURCES_FILES
     source/Vector3.cpp
     source/Vector4.cpp)
 
-add_library(g3dlite ${SOURCES_FILES})
-add_library(G3D::G3DLite ALIAS g3dlite)
+add_library(g3dlite STATIC ${SOURCES_FILES})
+add_library(G3D::g3dlite ALIAS g3dlite)
 
 target_include_directories(g3dlite
-    PRIVATE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
     PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
         $<INSTALL_INTERFACE:include>
 )
+
+target_compile_options(g3dlite
+    INTERFACE 
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4996 /wd4985 /wd4244 /wd4267 /wd4619 /wd4512>)
 
 target_link_libraries(g3dlite
   PUBLIC
@@ -59,32 +62,38 @@ target_link_libraries(g3dlite
     Threads::Threads
 )
 
-install(
-    TARGETS g3dlite
-    EXPORT g3dlite-targets
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
+# Package configuration:
 
-file(GLOB HEADERS "${CMAKE_CURRENT_LIST_DIR}/include/*.h")
-install(FILES ${HEADERS} DESTINATION "include")
-
+include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/g3dlite-config.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/g3dlite-config.cmake"
-  INSTALL_DESTINATION "share/g3dlite"
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/g3dliteConfig.cmake.in"
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    @ONLY
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    DESTINATION
+    ${INSTALL_CONFIGDIR}
 )
 
 install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/g3dlite-config.cmake"
-  DESTINATION "share/g3dlite"
+    DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/include/G3D"
+    DESTINATION "include"
 )
 
 install(
-    EXPORT g3dlite-targets
-    DESTINATION share/g3dlite
-    NAMESPACE G3D::
+    TARGETS  ${PROJECT_NAME}
+    EXPORT   ${PROJECT_NAME}Targets DESTINATION lib
+    INCLUDES                        DESTINATION include
+)
+
+install(
+    EXPORT ${PROJECT_NAME}Targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${INSTALL_CONFIGDIR}
 )
