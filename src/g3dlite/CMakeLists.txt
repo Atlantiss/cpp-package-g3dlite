@@ -94,6 +94,6 @@ install(
 install(
     EXPORT ${PROJECT_NAME}Targets
     FILE ${PROJECT_NAME}Targets.cmake
-    NAMESPACE ${PROJECT_NAME}::
+    NAMESPACE G3D::
     DESTINATION ${INSTALL_CONFIGDIR}
 )
